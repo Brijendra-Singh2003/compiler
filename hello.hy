@@ -12,7 +12,7 @@ int fac(int n) {
 
 int main() {
     int a = 8;
-    int b = a + 7;
+    //int b = a + 7;
 
     return fac(sub(b, a));
 }

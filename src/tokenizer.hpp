@@ -25,7 +25,7 @@ public:
 
         while (!isAtEnd()) {
             start = curr;
-            char c = readChar();
+            char c = consume();
 
             switch (c) {
                 // Single character tokens
@@ -38,9 +38,22 @@ public:
             case '+': addToken(TokenType::PLUS); break;
             case '-': addToken(TokenType::MINUS); break;
             case '*': addToken(TokenType::STAR); break;
-            case '/': addToken(TokenType::SLASH); break;
-
-                // One or two character tokens
+            
+            // One or two character tokens
+            case '/':
+                if (match('/')) {
+                    while (!isAtEnd() && !match('\n')) {
+                        advance();
+                    }
+                    ++line;
+                } else if (match('*')) {
+                    while (!isAtEnd() && !(match('*') && match('/'))) {
+                        advance();
+                    }
+                } else {
+                    addToken(TokenType::SLASH);
+                }
+                break;
             case '=':
                 addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
                 break;
@@ -101,7 +114,7 @@ private:
 
     inline void readIdentifier() {
         while (isAlphanumeric(peek())) {
-            consume();
+            advance();
         }
 
         std::string lexeme = content.substr(start, curr - start);
@@ -121,7 +134,7 @@ private:
 
     inline void readNumber() {
         while (std::isdigit(peek())) {
-            consume();
+            advance();
         }
 
         addToken(TokenType::INT_LIT);
@@ -146,13 +159,13 @@ private:
         return content[curr + 1];
     }
 
-    inline char readChar() {
+    inline char consume() {
         char c = peek();
-        consume();
+        advance();
         return c;
     }
 
-    inline void consume() {
+    inline void advance() {
         ++curr;
     }
 
