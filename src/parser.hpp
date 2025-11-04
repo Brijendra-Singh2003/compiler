@@ -129,13 +129,7 @@ public:
 
         // Function declaration
         if (match(TokenType::LEFT_PAREN)) {
-            advance(); // consume '('
-            auto params = parseParams();
-
-            if (!match(TokenType::RIGHT_PAREN)) {
-                throw std::runtime_error("Expected ')' after parameters");
-            }
-            advance(); // consume ')'
+            local_var_names.push_back(std::unordered_map<std::string, int>());
 
             Token fn_token{
                 .type = TokenType::FUNCTION_DECL,
@@ -143,12 +137,23 @@ public:
                 .line = keyword.line,
             };
 
+            advance(); // consume '('
+            auto params = parseParams();
+
+            if (!match(TokenType::RIGHT_PAREN)) {
+                throw std::runtime_error("Expected ')' after parameters");
+            }
+            advance(); // consume ')'
+            
             this->max_local_vars_count = 0;
             auto block = parseBlock();
+
             auto fn_sign = std::make_unique<TreeNode>(keyword, std::move(left), std::move(params));
 
             auto fn_node = std::make_unique<FuncNode>(fn_token, std::move(fn_sign), std::move(block));
             fn_node->max_local_var_count = this->max_local_vars_count;
+            
+            local_var_names.pop_back();
 
             return fn_node;
         }
@@ -326,18 +331,19 @@ public:
             return nullptr;
         }
 
-        auto left = parseParam();
+        int param_pos = 1;
+        auto left = parseParam(++param_pos);
 
         while (match(TokenType::COMMA)) {
             auto comma = consume(); // consume ','
-            auto right = parseParam();
+            auto right = parseParam(++param_pos);
             left = std::make_unique<TreeNode>(comma, std::move(left), std::move(right));
         }
 
         return left;
     }
 
-    std::unique_ptr<TreeNode> parseParam() {
+    std::unique_ptr<TreeNode> parseParam(int pos) {
         if (!isTypeKeyword()) {
             throw std::runtime_error("Expected type keyword in parameter");
         }
@@ -347,6 +353,7 @@ public:
             throw std::runtime_error("Expected parameter name at Line:" + std::to_string(type.line));
         }
         auto name = consume();
+        local_var_names.back()[name.lexeme] = -pos;
 
         return std::make_unique<TreeNode>(type, std::make_unique<TreeNode>(name), nullptr);
     }
@@ -450,6 +457,7 @@ public:
         if (match(TokenType::IDENTIFIER)) {
             advance();
 
+            // check if it's a function call
             if (match(TokenType::LEFT_PAREN)) {
                 advance();
 
@@ -459,15 +467,17 @@ public:
                     .line = token.line
                 };
 
+                Token arg_list_token {
+                    .type = TokenType::ARG_LIST,
+                    .lexeme = "arg",
+                    .line = call_token.line
+                };
+
                 std::unique_ptr<TreeNode> left = nullptr;
 
                 while (!match(TokenType::RIGHT_PAREN)) {
-                    if (!match(TokenType::IDENTIFIER) && !match(TokenType::INT_LIT)) {
-                        throw std::runtime_error("Invalid paramerer. at line:" + std::to_string(token.line));
-                    }
-
-                    auto param_token = consume();
-                    left = std::make_unique<TreeNode>(param_token, std::move(left), nullptr);
+                    auto arg = parseExpression();
+                    left = std::make_unique<TreeNode>(arg_list_token, std::move(left), std::move(arg));
 
                     if (!match(TokenType::COMMA)) break;
                     advance();
@@ -562,6 +572,6 @@ private:
             }
         }
 
-        return nullptr;
+        return std::nullopt;
     }
 };

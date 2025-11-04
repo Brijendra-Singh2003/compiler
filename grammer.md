@@ -53,13 +53,24 @@ ReturnStatement &\to return\ ExpressionStatement
 $$
 
 
-## Function node
+### Function node
 ```
                      dec
                     /   \
               fn_dec     next
              /      \
-     ret_type        def_block
-    /        \
-name          params
+      fn_sign        fn_body
+     /       \
+ret_type    params
+```
+
+### Function Call node
+```
+                 fn_call
+                 /     \
+        param_list     next
+        /        \
+param_list       arg_2
+         \
+         arg_1
 ```

@@ -79,6 +79,10 @@ std::unique_ptr<TreeNode> parseCode(std::vector<Token>& tokens) {
         std::cerr << err.what() << std::endl;
         return nullptr;
     }
+    catch (std::logic_error err) {
+        std::cerr << err.what() << std::endl;
+        return nullptr;
+    }
 }
 
 int main(int argc, char** argv)
@@ -112,14 +116,14 @@ int main(int argc, char** argv)
     printTreePreOrder(tree_root);
     std::clog << "\n";
 
-    // Generator generator(tree_root);
-    // std::string asm_code = generator.generateAsm64();
+    Generator generator(tree_root);
+    std::string asm_code = generator.generateAsm64();
 
-    // if (auto fout = std::ofstream("./out.asm")) {
-    //     fout << asm_code;
-    // } else {
-    //     std::cerr << "Unable to open asm file.\n";
-    // }
+    if (auto fout = std::ofstream("./out.asm")) {
+        fout << asm_code;
+    } else {
+        std::cerr << "Unable to open asm file.\n";
+    }
 
     return 0;
 }

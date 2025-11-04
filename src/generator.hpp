@@ -161,13 +161,8 @@ private:
             }
 
             auto id = tree_node->left->token.lexeme;
-
-            if (tree_node->right->token.type != TokenType::INT_LIT) {
-                throw std::runtime_error("Integer value expected. at line:" + std::to_string(tree_node->right->token.line));
-            }
-            auto val = tree_node->right->token.lexeme;
-
-            asm_code << "   mov qword [rbp - " << id << "], " << val << "\n";
+            generateExpr(tree_node->right);
+            asm_code << "   mov qword [rbp - " << id << "], rax\n";
             return;
         }
 
@@ -189,9 +184,33 @@ private:
             return;
         }
 
+        if (token.type == TokenType::FUNCTION_CALL) {
+            TreeNode* tmp = tree_node->left.get();
+            int total_param_bytes = 0;
+
+            while (tmp != nullptr) {
+                if (tmp->token.type != TokenType::ARG_LIST) {
+                    throw std::runtime_error("Arg expected in function call, got: " + tmp->token.toString());
+                }
+
+                generateExpr(tmp->right);
+                asm_code << "   push rax\n";
+
+                tmp = tmp->left.get();
+                total_param_bytes += 8;
+            }
+
+            asm_code << "   call _" << token.lexeme << '\n';
+            if (total_param_bytes > 0) {
+                asm_code << "   add rsp, " << total_param_bytes << '\n';
+            }
+
+            return;
+        }
+
         if (token.type == TokenType::EQUAL) {
             if (tree_node->left == nullptr) {
-                throw std::runtime_error("Identifier expected on the left of '='. at line:" + std::to_string(token.line));
+                throw std::runtime_error("Identifier expected before '='. at line:" + std::to_string(token.line));
             }
 
             auto var_id = tree_node->left->token.lexeme;

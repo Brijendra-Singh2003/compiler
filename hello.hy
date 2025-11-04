@@ -1,12 +1,18 @@
-int main() {
-    int n = 4;
-    int fac = 1;
+int sub(int a, int b) {
+    return a - b;
+}
 
-    int i = 1;
-    while (i <= n) {
-        fac = fac * i;
-        i = i + 1;
+int fac(int n) {
+    if (n <= 1) {
+        return n;
     }
 
-    return fac(2, 5);
+    return fac(n-1) + fac(n-2);
+}
+
+int main() {
+    int a = 8;
+    int b = a + 7;
+
+    return fac(sub(b, a));
 }
