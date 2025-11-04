@@ -1,74 +1,12 @@
 #include "tokenizer.hpp"
 #include "parser.hpp"
 #include "generator.hpp"
+#include "util.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <queue>
-
-void printTree(std::unique_ptr<TreeNode>& root) {
-    if (root == nullptr) {
-        return;
-    }
-
-    std::queue<TreeNode*> q;
-    q.push(root.get());
-
-    while (!q.empty()) {
-        int levelSize = q.size();
-
-        for (int i = 0; i < levelSize; i++) {
-            TreeNode* current = q.front();
-            q.pop();
-            
-            std::clog << current->token.lexeme << '\t';
-            
-            if (current->left != nullptr) {
-                q.push(current->left.get());
-            }
-            if (current->right != nullptr) {
-                q.push(current->right.get());
-            }
-        }
-        
-        std::clog << std::endl;
-    }
-}
-
-void printTreeInOrder(const std::unique_ptr<TreeNode>& root) {
-    if (root == nullptr) {
-        return;
-    }
-
-    printTreeInOrder(root->left);
-    std::clog << root->token.lexeme << ' ';
-    printTreeInOrder(root->right);
-}
-
-void printTreePreOrder(const std::unique_ptr<TreeNode>& root) {
-    if (root == nullptr) {
-        return;
-    }
-
-    std::clog << root->token.lexeme << ' ';
-    printTreePreOrder(root->left);
-    printTreePreOrder(root->right);
-}
-
-std::string readFile(std::string filePath) {
-    std::ifstream fin(filePath);
-
-    if (!fin) {
-        std::cerr << "Unable to open file.\n";
-        exit(EXIT_FAILURE);
-    }
-
-    std::stringstream ss;
-    ss << fin.rdbuf();
-
-    return ss.str();
-}
 
 std::unique_ptr<TreeNode> parseCode(std::vector<Token>& tokens) {
     Parser parser(tokens);
@@ -108,7 +46,7 @@ int main(int argc, char** argv)
 
     std::clog << "Tree generated.\n";
 
-    printTree(tree_root);
+    printTreeLevelOrder(tree_root);
     std::clog << "\n\n";
 
     std::clog << tree_root->toString() << std::endl;

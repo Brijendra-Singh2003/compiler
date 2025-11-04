@@ -1,6 +1,7 @@
 #pragma once
 
 #include "parser.hpp"
+#include "util.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -16,6 +17,8 @@ public:
         }
 
         try {
+            auto printfn_asm_code = readFile("./src/asm_lib/print_int.asm");
+
             asm_code << "global _start\n";
             asm_code << "_start:\n";
             asm_code << "   call _main\n";
@@ -27,6 +30,8 @@ public:
             asm_code << "   syscall\n";
             
             generateDeclerationList(root);
+
+            asm_code << printfn_asm_code;
             return asm_code.str();
         }
         catch(const std::runtime_error& e) {

@@ -1,6 +1,3 @@
-section .text
-    global _start
-
 _print_int:
     push rbp
     mov rbp, rsp
@@ -46,13 +43,3 @@ _L0:
     mov rsp, rbp            
     pop rbp
     ret
-
-_start:
-    mov rax, 1234
-    push rax            ; Push the number (argument 1 at rbp+16)
-    call _print_num
-
-    ; Exit
-    mov rax, 60
-    xor rdi, rdi
-    syscall
