@@ -366,7 +366,7 @@ public:
     std::unique_ptr<TreeNode> parseAssignment() {
         auto left = parseLogicalOr();
 
-        if (match(TokenType::EQUAL)) {
+        if (match(TokenType::EQUAL) || match(TokenType::PLUS_EQUAL) || match(TokenType::MINUS_EQUAL)) {
             auto op = consume();
             auto right = parseAssignment();
             return std::make_unique<TreeNode>(op, std::move(left), std::move(right));

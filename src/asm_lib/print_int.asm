@@ -1,15 +1,27 @@
 _print_int:
     push rbp
     mov rbp, rsp
-    sub rsp, 24             ; Allocate buffer
+    sub rsp, 25             ; Allocate buffer
     
+    mov byte [rbp - 25], 0
     mov rax, [rbp + 16]     ; RAX = Number
+
+    shr rax, 63
+    cmp rax, 0
+    mov rax, [rbp + 16]
+    jz _L1
+
+    not rax
+    inc rax
+    mov byte [rbp - 25], 1
+
+_L1:
     mov rbx, 10             ; RBX = 10
     
     ; R8 will track the position of the last digit (End of buffer)
-    mov r8, rsp
-    add r8, 23              ; R8 points to RSP + 23 (The end of the buffer)
-    
+    mov r8, rbp
+    sub r8, 1               ; R8 points to RSP + 23 (The end of the buffer)
+
     mov rcx, r8             ; RCX is the writing pointer
     mov byte [rcx], 10      ; Store byte
     dec rcx
@@ -24,7 +36,14 @@ _L0:
     
     cmp rax, 0
     jnz _L0
-    
+
+    mov al, [rbp - 25]
+    cmp al, 0
+    jz _L2
+    mov byte [rcx], '-'      ; Store byte
+    dec rcx
+
+_L2:
     inc rcx                 ; RCX now points to the first digit ('1')
 
     ; --- Syscall to print the number ---

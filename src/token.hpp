@@ -8,12 +8,15 @@ enum TokenType {
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
     COMMA, SEMICOLON, AND, OR,
 
-    // Operators
+    // unary Oprators
+    BANG,
+
+    // binary Operators
     PLUS, MINUS, STAR, SLASH, PERCENTAGE,
     PLUS_EQUAL, MINUS_EQUAL, STAR_EQUAL, SLASH_EQUAL,
 
     // Comparison operators  
-    EQUAL, EQUAL_EQUAL, BANG, BANG_EQUAL,
+    EQUAL, EQUAL_EQUAL, BANG_EQUAL,
     LESS, LESS_EQUAL, GREATER, GREATER_EQUAL,
 
     // logical operators

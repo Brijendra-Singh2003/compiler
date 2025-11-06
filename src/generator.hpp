@@ -16,29 +16,22 @@ public:
             return "";
         }
 
-        try {
-            auto printfn_asm_code = readFile("./src/asm_lib/print_int.asm");
+        auto printfn_asm_code = readFile("./src/asm_lib/print_int.asm");
 
-            asm_code << "global _start\n";
-            asm_code << "_start:\n";
-            asm_code << "   call _main\n";
+        asm_code << "global _start\n";
+        asm_code << "_start:\n";
+        asm_code << "   call _main\n";
 
-            // Exit
-            asm_code << "   ; Exit\n";
-            asm_code << "   mov rdi, rax\n";
-            asm_code << "   mov rax, 60\n";
-            asm_code << "   syscall\n";
-            
-            generateDeclerationList(root);
+        // Exit
+        asm_code << "   ; Exit\n";
+        asm_code << "   mov rdi, rax\n";
+        asm_code << "   mov rax, 60\n";
+        asm_code << "   syscall\n";
+        
+        generateDeclerationList(root);
 
-            asm_code << printfn_asm_code;
-            return asm_code.str();
-        }
-        catch(const std::runtime_error& e) {
-            std::cerr << e.what() << '\n';
-        }
-
-        return "";
+        asm_code << printfn_asm_code;
+        return asm_code.str();
     }
 
 private:
@@ -175,61 +168,20 @@ private:
     }
 
     void generateExpr(const std::unique_ptr<TreeNode>& tree_node) {
-        if (tree_node == nullptr) return;
-
-        const auto token = tree_node->token;
-
-        if (token.type == TokenType::INT_LIT) {
-            asm_code << "   mov rax, " << token.lexeme << "\n";
-            return;
+        if (generateTerminal(tree_node)) return;
+        
+        bool is_unary = tree_node->left == nullptr;
+        if (is_unary) {
+            asm_code << "   xor rax, rax\n";
+        } else {
+            generateExpr(tree_node->left);
         }
 
-        if (token.type == TokenType::IDENTIFIER) {
-            asm_code << "   mov rax, qword [rbp - " << token.lexeme << "]" << "\n";
-            return;
-        }
-
-        if (token.type == TokenType::FUNCTION_CALL) {
-            TreeNode* tmp = tree_node->left.get();
-            int total_param_bytes = 0;
-
-            while (tmp != nullptr) {
-                if (tmp->token.type != TokenType::ARG_LIST) {
-                    throw std::runtime_error("Arg expected in function call, got: " + tmp->token.toString());
-                }
-
-                generateExpr(tmp->right);
-                asm_code << "   push rax\n";
-
-                tmp = tmp->left.get();
-                total_param_bytes += 8;
-            }
-
-            asm_code << "   call _" << token.lexeme << '\n';
-            if (total_param_bytes > 0) {
-                asm_code << "   add rsp, " << total_param_bytes << '\n';
-            }
-
-            return;
-        }
-
-        if (token.type == TokenType::EQUAL) {
-            if (tree_node->left == nullptr) {
-                throw std::runtime_error("Identifier expected before '='. at line:" + std::to_string(token.line));
-            }
-
-            auto var_id = tree_node->left->token.lexeme;
-
-            generateExpr(tree_node->right);
-            asm_code << "   mov qword [rbp - " << var_id << "], rax\n";
-            return;
-        }
-
-        generateExpr(tree_node->left);
         asm_code << "   push rax\n";
-
         generateExpr(tree_node->right);
         asm_code << "   pop rbx\n";
+
+        const auto token = tree_node->token;
 
         switch (token.type) {
         case TokenType::PLUS:
@@ -290,7 +242,7 @@ private:
             asm_code << "   cmovnz rbx, rax\n";
             asm_code << "   mov rax, rbx\n";
             break;
-            case TokenType::OR_OR:
+        case TokenType::OR_OR:
             asm_code << "   cmovz rbx, rax\n";
             asm_code << "   mov rax, rbx\n";
             break;
@@ -301,5 +253,83 @@ private:
         default:
             throw std::runtime_error("Invalid token '" + token.lexeme + "' at line:" + std::to_string(token.line));
         }
+    }
+
+    bool generateTerminal(const std::unique_ptr<TreeNode>& tree_node) {
+        if (tree_node == nullptr) return true;
+
+        const auto token = tree_node->token;
+
+        if (token.type == TokenType::INT_LIT) {
+            asm_code << "   mov rax, " << token.lexeme << "\n";
+            return true;
+        }
+
+        if (token.type == TokenType::IDENTIFIER) {
+            asm_code << "   mov rax, qword [rbp - " << token.lexeme << "]" << "\n";
+            return true;
+        }
+
+        if (token.type == TokenType::FUNCTION_CALL) {
+            TreeNode* tmp = tree_node->left.get();
+            int total_param_bytes = 0;
+
+            while (tmp != nullptr) {
+                if (tmp->token.type != TokenType::ARG_LIST) {
+                    throw std::runtime_error("Arg expected in function call, got: " + tmp->token.toString());
+                }
+
+                generateExpr(tmp->right);
+                asm_code << "   push rax\n";
+
+                tmp = tmp->left.get();
+                total_param_bytes += 8;
+            }
+
+            asm_code << "   call _" << token.lexeme << '\n';
+            if (total_param_bytes > 0) {
+                asm_code << "   add rsp, " << total_param_bytes << '\n';
+            }
+
+            return true;
+        }
+
+        if (token.type == TokenType::EQUAL) {
+            if (tree_node->left == nullptr || tree_node->left->token.type != TokenType::IDENTIFIER) {
+                throw std::runtime_error("Identifier expected before '='. at line:" + std::to_string(token.line));
+            }
+
+            auto var_id = tree_node->left->token.lexeme;
+
+            generateExpr(tree_node->right);
+            asm_code << "   mov qword [rbp - " << var_id << "], rax\n";
+            return true;
+        }
+
+        if (token.type == TokenType::PLUS_EQUAL) {
+            if (tree_node->left == nullptr || tree_node->left->token.type != TokenType::IDENTIFIER) {
+                throw std::runtime_error("Identifier expected before '+='. at line:" + std::to_string(token.line));
+            }
+
+            auto var_id = tree_node->left->token.lexeme;
+
+            generateExpr(tree_node->right);
+            asm_code << "   add qword [rbp - " << var_id << "], rax\n";
+            return true;
+        }
+
+        if (token.type == TokenType::MINUS_EQUAL) {
+            if (tree_node->left == nullptr || tree_node->left->token.type != TokenType::IDENTIFIER) {
+                throw std::runtime_error("Identifier expected before '-='. at line:" + std::to_string(token.line));
+            }
+
+            auto var_id = tree_node->left->token.lexeme;
+
+            generateExpr(tree_node->right);
+            asm_code << "   sub qword [rbp - " << var_id << "], rax\n";
+            return true;
+        }
+
+        return false;
     }
 };

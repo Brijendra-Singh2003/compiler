@@ -35,8 +35,6 @@ public:
             case '}': addToken(TokenType::RIGHT_BRACE); break;
             case ',': addToken(TokenType::COMMA); break;
             case ';': addToken(TokenType::SEMICOLON); break;
-            case '+': addToken(TokenType::PLUS); break;
-            case '-': addToken(TokenType::MINUS); break;
             case '*': addToken(TokenType::STAR); break;
             case '%': addToken(TokenType::PERCENTAGE); break;
             
@@ -49,11 +47,18 @@ public:
                     ++line;
                 } else if (match('*')) {
                     while (!isAtEnd() && !(match('*') && match('/'))) {
-                        advance();
+                        char ch = consume();
+                        if (ch == '\n') ++line;
                     }
                 } else {
                     addToken(TokenType::SLASH);
                 }
+                break;
+            case '+':
+                addToken(match('=') ? TokenType::PLUS_EQUAL : TokenType::PLUS);
+                break;
+            case '-':
+                addToken(match('=') ? TokenType::MINUS_EQUAL : TokenType::MINUS);
                 break;
             case '=':
                 addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);

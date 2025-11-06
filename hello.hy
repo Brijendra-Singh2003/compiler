@@ -1,16 +1,11 @@
-
 int main() {
-    int i = 0;
+    int a = 70;
+    int b = 1;
 
-    while (i < 10) {
-        if (i % 2 == 1) {
-            print_int(i);
-        } else {
-            print_int(0);
-        }
+    b -= a;
 
-        i = i + 1;
-    }
+    print_int(a);
+    print_int(b);
 
-    return 69;
+    return 0;
 }
