@@ -34,11 +34,6 @@ public:
         return asm_code.str();
     }
 
-private:
-    const std::unique_ptr<TreeNode>& root;
-    std::stringstream asm_code;
-    int if_count = 0;
-
     void generateDeclerationList(const std::unique_ptr<TreeNode>& tree_node) {
         if (tree_node == nullptr) return;
 
@@ -120,8 +115,8 @@ private:
 
         if (token_type == TokenType::IF) {
             auto if_node = dynamic_cast<IfNode*>(tree_node.get());
-            auto l0 = "_L" + std::to_string(++if_count);
-            auto l1 = "_L" + std::to_string(++if_count);
+            auto l0 = getUniqueLabel();
+            auto l1 = getUniqueLabel();
             
             generateExpr(if_node->condition);
             asm_code << "   cmp rax, 0\n";
@@ -138,8 +133,8 @@ private:
         }
 
         if (token_type == TokenType::WHILE) {
-            auto l0 = "_L" + std::to_string(++if_count);
-            auto l1 = "_L" + std::to_string(++if_count);
+            auto l0 = getUniqueLabel();
+            auto l1 = getUniqueLabel();
 
             asm_code << l0 << ":\n";
             generateExpr(tree_node->left);
@@ -255,6 +250,10 @@ private:
         }
     }
 
+private:
+    const std::unique_ptr<TreeNode>& root;
+    std::stringstream asm_code;
+
     bool generateTerminal(const std::unique_ptr<TreeNode>& tree_node) {
         if (tree_node == nullptr) return true;
 
@@ -331,5 +330,10 @@ private:
         }
 
         return false;
+    }
+
+    std::string getUniqueLabel() {
+        static int label_count = 0;
+        return "L" + std::to_string(++label_count);
     }
 };

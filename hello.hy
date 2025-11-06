@@ -7,5 +7,9 @@ int main() {
     print_int(a);
     print_int(b);
 
+    if (b < 0) {
+        return 1;
+    }
+
     return 0;
 }

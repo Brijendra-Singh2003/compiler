@@ -1,3 +1,4 @@
+
 _print_int:
     push rbp
     mov rbp, rsp
@@ -9,13 +10,13 @@ _print_int:
     shr rax, 63
     cmp rax, 0
     mov rax, [rbp + 16]
-    jz _L1
+    jz print_int_L1
 
     not rax
     inc rax
     mov byte [rbp - 25], 1
 
-_L1:
+print_int_L1:
     mov rbx, 10             ; RBX = 10
     
     ; R8 will track the position of the last digit (End of buffer)
@@ -26,7 +27,7 @@ _L1:
     mov byte [rcx], 10      ; Store byte
     dec rcx
 
-_L0:
+print_int_L0:
     xor rdx, rdx            
     div rbx                 ; RDX = digit
     
@@ -35,15 +36,15 @@ _L0:
     dec rcx                 ; Move back
     
     cmp rax, 0
-    jnz _L0
+    jnz print_int_L0
 
     mov al, [rbp - 25]
     cmp al, 0
-    jz _L2
+    jz print_int_L2
     mov byte [rcx], '-'      ; Store byte
     dec rcx
 
-_L2:
+print_int_L2:
     inc rcx                 ; RCX now points to the first digit ('1')
 
     ; --- Syscall to print the number ---
