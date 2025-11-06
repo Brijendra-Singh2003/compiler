@@ -248,6 +248,13 @@ private:
             asm_code << "   cdq\n";           // sign extend eax into edx:eax
             asm_code << "   idiv rcx\n";      // result in eax
             break;
+        case TokenType::PERCENTAGE:
+            asm_code << "   mov rcx, rax\n";  // divisor in ecx
+            asm_code << "   mov rax, rbx\n";  // dividend in eax
+            asm_code << "   cdq\n";           // sign extend eax into edx:eax
+            asm_code << "   idiv rcx\n";      // result in eax
+            asm_code << "   mov rax, rdx\n";      // result in eax
+            break;
         case TokenType::LESS:
             asm_code << "   cmp rbx, rax\n";
             asm_code << "   setl al\n";

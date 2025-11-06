@@ -38,6 +38,7 @@ public:
             case '+': addToken(TokenType::PLUS); break;
             case '-': addToken(TokenType::MINUS); break;
             case '*': addToken(TokenType::STAR); break;
+            case '%': addToken(TokenType::PERCENTAGE); break;
             
             // One or two character tokens
             case '/':

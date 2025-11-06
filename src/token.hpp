@@ -9,7 +9,7 @@ enum TokenType {
     COMMA, SEMICOLON, AND, OR,
 
     // Operators
-    PLUS, MINUS, STAR, SLASH,
+    PLUS, MINUS, STAR, SLASH, PERCENTAGE,
     PLUS_EQUAL, MINUS_EQUAL, STAR_EQUAL, SLASH_EQUAL,
 
     // Comparison operators  
@@ -76,6 +76,7 @@ struct Token {
             case TokenType::INT_LIT: ss << "INT_LIT"; break;
             case TokenType::EOF_TOKEN: ss << "EOF"; break;
             case TokenType::DECL_LIST: ss << "DECL_LIST"; break;
+            case TokenType::PERCENTAGE: ss << "PERCENTAGE"; break;
         }
         
         ss << " '" << lexeme << "'";

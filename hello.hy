@@ -1,22 +1,16 @@
-int sub(int a, int b) {
-    return a - b;
-}
-
-int fib(int n) {
-    if (n <= 1) {
-        return n;
-    }
-
-    return fib(n-1) + fib(n-2);
-}
 
 int main() {
-    int a = 8;
-    int b = a + 40;
+    int i = 0;
 
-    int res = fib(sub(b, a));
+    while (i < 10) {
+        if (i % 2 == 1) {
+            print_int(i);
+        } else {
+            print_int(0);
+        }
 
-    print_int(res);
+        i = i + 1;
+    }
 
-    return 0;
+    return 69;
 }

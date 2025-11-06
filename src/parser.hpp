@@ -428,7 +428,7 @@ public:
     std::unique_ptr<TreeNode> parseFactor() {
         auto left = parseUnary();
 
-        while (match(TokenType::STAR) || match(TokenType::SLASH)) {
+        while (match(TokenType::STAR) || match(TokenType::SLASH) || match(TokenType::PERCENTAGE)) {
             auto op = consume();
             auto right = parseUnary();
             left = std::make_unique<TreeNode>(op, std::move(left), std::move(right));
